@@ -2,3 +2,9 @@ Django app that runs on your laptop and creates a local cache of the
 popular Achewood comic strip, so that you may read it in a place such
 as the train or wherever else a lack of internet is.
 
+Based on an earlier non-django python script by Christian Swinehart.
+
+NOTE: I have a deep and everlasting love for Mr. Onstad and his pantheon
+of fantastic animals and that is why I made this, not to somehow evade
+his copyrights or anything like that. It's so that one can read the strip
+locally on your laptop and any other infringing uses are stupid. 
