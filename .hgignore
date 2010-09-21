@@ -1,0 +1,13 @@
+syntax: glob
+
+*.gif
+*.jpg
+*.png
+*.eprj
+*.tmproj
+*.svn
+*.pyc
+*.db
+*.orig
+*~
+.DS_Store
