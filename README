@@ -1,0 +1,4 @@
+Django app that runs on your laptop and creates a local cache of the
+popular Achewood comic strip, so that you may read it in a place such
+as the train or wherever else a lack of internet is.
+
