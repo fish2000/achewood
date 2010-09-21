@@ -1,0 +1,17 @@
+body{
+    text-align:center;
+}
+#theDate{
+    margin:40px 0 0 0;
+    font:14px CaspariCaps;
+    color:#555;
+    letter-spacing:0.1em;
+    text-transform:lowercase;
+}
+#theComic{
+    margin:10px 0 0 0;
+}
+#theComment{
+    margin:14px 0 0 0;
+    font:14px Caspari;
+}
