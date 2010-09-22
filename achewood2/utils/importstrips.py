@@ -112,7 +112,6 @@ def AWGetStripAssetbarData(yyyy=None, mm=None, dd=None, urlstring=None):
 	
 	prevnext = dict(map(lambda a: (sre.search(a.string).group(), a['href']), nodes.find('span', {'class': "prevnext"}).findAll('a')))
 	
-	#return (img_url, title, alt_text, prevnext['prev'], prevnext['next'])
 	prevnext.update({
 		'urlstring': urlstring,
 		'month': month,
@@ -124,7 +123,7 @@ def AWGetStripAssetbarData(yyyy=None, mm=None, dd=None, urlstring=None):
 	})
 	return prevnext
 
-#@memoize
+@memoize
 def AWGetStripAchewoodData(yyyy=None, mm=None, dd=None, urlstring=None):
 	"""
 	Get a tuple of Achewood.com data for a given date
@@ -179,7 +178,7 @@ def AWGetStripDialogue(yyyy=None, mm=None, dd=None, urlstring=None):
 		return strip_entities(strip_tags(dlg.pop()))
 	return u""
 
-#@memoize
+@memoize
 def AWGetStripData(yyyy=None, mm=None, dd=None, urlstring=None):
 	if urlstring:
 		bar = AWGetStripAssetbarData(urlstring=urlstring)
@@ -198,7 +197,6 @@ def AWGetStripData(yyyy=None, mm=None, dd=None, urlstring=None):
 @memoize
 def AWGetAssetbarMonths(url="http://m.assetbar.com/achewood/archive"):
 	pageText = urllib2.urlopen(url).read()
-	#index_pages = ["http://m.assetbar.com/achewood/"+u for u in monthly_re.findall(pageText)]
 	index_pages = [u.split('=')[1] for u in monthly_re.findall(pageText)]
 	return map(lambda m: (m[0:4], m[4:6]), index_pages)
 
@@ -237,7 +235,6 @@ def repairEntities(brokenText):
 	
 	for subSearch, subReplace in replacements:
 		fixedText = re.subn(subSearch, subReplace, fixedText)[0]
-	#return UnicodeDammit(fixedText).unicode
 	return fixedText
 
 def main(argv=None):
@@ -279,6 +276,7 @@ def get_data(mths=None):
 			mth.data = urllib2.urlopen(mth.url).read()
 			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
 			mth.save()
+		
 		#bar = AWAssetbarURLStringsForMonth(yyyy, mm)
 		bar = AWAssetbarURLStringsForMonth(data=mth.data)
 		print "%s %s: %s strips" % (monthnames[int(mm)].capitalize(), yyyy, len(bar))
@@ -289,10 +287,11 @@ def get_data(mths=None):
 				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
 				data = AWGetStripData(urlstring=strip)
-				#print u">>>\t %s\t %s" % (d, UnicodeDammit(data['title']).unicode)
+				#data = AWGetStripAssetbarData(urlstring=strip)
+				
 				print u">>>\t %s\t %s" % (d, repairEntities(data['title'])) # .decode('iso-8859-1')
+				
 				c = AWComic()
-				#print ">>>\t Creating new strip..."
 				c.postdate = datetime.date(
 					int(data['year']),
 					int(data['month']),

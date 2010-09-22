@@ -12,7 +12,12 @@ from achewood2.localache.models import AWComic, AWImage, AWCalendarMonth
 
 
 def get_alturls():
-	for c in AWComic.objects.exclude(alturl__istartswith="http://m.assetbar.com/"):
+	aurls = AWComic.objects.exclude(alturl__istartswith="http://m.assetbar.com/")
+	
+	print ">>>\t TOTAL %s" % aurls.count()
+	print ""
+	
+	for c in aurls:
 		print "---\t %s\t %s" % (AWAchewoodDate(c.postdate.year, c.postdate.month, c.postdate.day), c.alturl)
 
 
