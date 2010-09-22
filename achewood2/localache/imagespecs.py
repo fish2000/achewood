@@ -38,8 +38,6 @@ class VanillaICC(processors.ICCTransform):
 	source = os.path.join(settings.MEDIA_ROOT, 'icc', 'WebSafeColors.icc') # web safe LUT
 	destination = os.path.join(settings.MEDIA_ROOT, 'icc', 'sRGB-IEC61966-2-1.icc') # sRGB 61966-2.1
 
-
-
 ## actual image specs
 class AdminThumbnail(ImageSpec):
 	#quality = 80
