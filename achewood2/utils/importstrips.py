@@ -252,6 +252,8 @@ def get_data():
 				c.alturl = data['url']
 				c.asseturlstring = data['urlstring']
 				c.dialogue = data['dialogue']
+				c.imageurl = data['imgurl']
+				c.save()
 				if not c.image:
 					t = AWGetTemporaryFileForURL(data['imgurl'])
 					if t:
@@ -262,7 +264,6 @@ def get_data():
 							int(data['day']),
 						)
 						cim = AWImage()
-						cim.originalurl = data['imgurl']
 						cim.image.save(tn, File(t))
 						cim.save()
 						c.image = cim

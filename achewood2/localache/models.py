@@ -164,15 +164,6 @@ class AWImage(AWBaseImage):
 		abstract = False
 		verbose_name = "achewood strip image file"
 		verbose_name_plural = "achewood strip image files"
-	
-	originalurl = models.URLField(verbose_name="Original Image URL",
-		verify_exists=False,
-		default=None,
-		unique=False,
-		blank=True,
-		null=True,
-		max_length=255)
-
 
 
 class AWComic(AWBaseMorsel):
@@ -186,6 +177,13 @@ class AWComic(AWBaseMorsel):
 		blank=True,
 		null=True,
 		editable=True)
+	imageurl = models.URLField(verbose_name="Original Image URL",
+		verify_exists=False,
+		default=None,
+		unique=False,
+		blank=True,
+		null=True,
+		max_length=255)
 	postdate = models.DateField('Posted on',
 		default=date.today,
 		blank=True,
