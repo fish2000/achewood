@@ -21,7 +21,6 @@ class AWComicAdmin(AWNimda):
 		yesno = obj.alturl.startswith('http://m.assetbar.com/achewood/one_strip') and "img/admin/icon-no.gif" or "img/admin/icon-yes.gif"
 		alturl = obj.alturl.startswith('http://') and obj.alturl or urlparse.urljoin('http://www.achewood.com/', obj.alturl, allow_fragments=True)
 		return u'<a href="%s"><img src="%s" alt="Huh" /></a>' % (
-			#obj.id and ("/admin/localache/awcomic/%s/" % obj.id) or '#',
 			obj.alturl.startswith('http://m.assetbar.com/achewood/one_strip') and "#" or alturl,
 			os.path.join(settings.ADMIN_MEDIA_PREFIX, yesno),
 		)

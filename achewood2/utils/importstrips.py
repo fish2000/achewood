@@ -13,9 +13,7 @@ try:
 	import re2 as re
 except ImportError:
 	import re
-	#print "Using standard library regexes"
 else:
-	#print "Using Google RE2 regexes (fallback to standard library)"
 	re.set_fallback_notification(re.FALLBACK_WARNING)
 
 import os, urllib2, urlparse, datetime
@@ -306,7 +304,6 @@ def get_data(mths=None):
 			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
 			mth.save()
 		
-		#bar = AWAssetbarURLStringsForMonth(yyyy, mm)
 		bar = AWAssetbarURLStringsForMonth(data=mth.data)
 		print "%s %s: %s strips" % (monthnames[int(mm)].capitalize(), yyyy, len(bar))
 		
@@ -316,11 +313,9 @@ def get_data(mths=None):
 				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
 				data = AWGetStripData(urlstring=strip)
-				#data = AWGetStripAssetbarData(urlstring=strip)
 				
 				print u">>>\t %s\t %s" % (
-					d, #xmlcharref
-					unicode(repairEntities(data['title']).decode('utf-8', "replace"))#.encode('iso-8859-1', "replace")
+					d, unicode(repairEntities(data['title']).decode('utf-8', "replace"))
 				)
 				
 				c = AWComic()
@@ -338,8 +333,6 @@ def get_data(mths=None):
 				c.save()
 			else:
 				print "---\t %s\t %s" % (d, c.title,)
-				#c.urlstring = ""
-				#c.save()
 			
 		print ""
 	
@@ -368,16 +361,15 @@ def get_images():
 					int(c.postdate.month),
 					int(c.postdate.day),
 				), suffix)
-				#print ">>>\t New image: %s" % tn
+				
 				cim = AWImage()
 				cim.comic = c
-				cim.save()
+				#cim.save()
 				
 				cim.image.save(tn, File(t))
 				cim.save()
 				
 				print ">>>\t New image: %s" % os.path.basename(cim.image.name)
-				#c.save()
 		else:
 			print "---\t Existing image: %s" % os.path.basename(im.image.name)
 	

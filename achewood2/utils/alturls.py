@@ -21,7 +21,6 @@ def get_alturls():
 		
 		if str(c.alturl) == "None":
 			print "###\t %s\t Fixing..." % AWAchewoodDate(c.postdate.year, c.postdate.month, c.postdate.day)
-			#data = AWGetStripAchewoodData(urlstring=c.asseturlstring)
 			data = AWGetStripAchewoodData(c.postdate.year, c.postdate.month, c.postdate.day)
 			c.alturl = data['url']
 			c.save()
