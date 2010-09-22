@@ -33,8 +33,7 @@ class JPEGFormatter(processors.Format):
 	extension = 'jpg'
 
 class VanillaICC(processors.ICCTransform):
-	source = '/Library/Application Support/Adobe/Color/Profiles/Recommended/sRGB Color Space Profile.icm' # sRGB 61966-2.1
-	#destination = '/Library/Printers/Canon/BJPrinter/Resources/ICCProfiles/Pro9000.canonicc/Contents/Resources/Canon Pro9000 GL1.icc' # Canon 9000 Bubblejet Fine Art
+	source = '/Library/ColorSync/Profiles/WebSafeColors.icc' # web save LUT
 	destination = '/Library/Application Support/Adobe/Color/Profiles/Recommended/sRGB Color Space Profile.icm' # sRGB 61966-2.1
 
 
@@ -44,7 +43,7 @@ class AdminThumbnail(ImageSpec):
 	#quality = 80
 	access_as = "adminthumb"
 	pre_cache = True
-	processors = [VanillaICC, JPEGFormatter, ResizeAdminThumb, EnhanceThumb]
+	processors = [ResizeAdminThumb, EnhanceThumb]
 
 class Thumbnail(ImageSpec):
 	#quality = 80

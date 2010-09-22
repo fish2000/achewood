@@ -99,3 +99,6 @@ INSTALLED_APPS = (
 	'imagekit',
 	'achewood2.localache',
 )
+
+
+PIL_IMAGEFILE_MAXBLOCK = 1024 * 2 ** 10
