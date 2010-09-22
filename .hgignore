@@ -6,6 +6,7 @@ syntax: glob
 *.png
 
 assets/*.html
+datadumps/*.json
 
 *.eprj
 *.tmproj
