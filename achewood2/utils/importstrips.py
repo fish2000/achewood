@@ -219,7 +219,7 @@ def AWGetTemporaryFileForURL(url, **kwargs):
 
 def main(argv=None):
 	get_data()
-	#get_images()
+	get_images()
 	#generate_pages()
 	return 0
 
@@ -254,22 +254,7 @@ def get_data():
 				c.dialogue = data['dialogue']
 				c.imageurl = data['imgurl']
 				c.save()
-				if not c.image:
-					t = AWGetTemporaryFileForURL(data['imgurl'])
-					if t:
-						print ">>>\t Creating new image..."
-						tn = "%s.gif" % AWAssetbarDate(
-							int(data['year']),
-							int(data['month']),
-							int(data['day']),
-						)
-						cim = AWImage()
-						cim.image.save(tn, File(t))
-						cim.save()
-						c.image = cim
-						c.save()
-			
-			
+				
 			"""
 			c = AWComic(
 				postdate=datetime.date(
@@ -290,7 +275,28 @@ def get_data():
 	print ""
 
 def get_images():
-	pass
+	
+	comix = AWComic.objects.all()
+	
+	print "Getting images for %s cached comics..." % comix.count()
+	
+	for c in comix:
+		if not c.image:
+			t = AWGetTemporaryFileForURL(c.imageurl)
+			if t:
+				print ">>>\t Creating new image..."
+				tn = "%s.gif" % AWAssetbarDate(
+					int(data['year']),
+					int(data['month']),
+					int(data['day']),
+				)
+				cim = AWImage()
+				cim.image.save(tn, File(t))
+				cim.save()
+				c.image = cim
+				c.save()
+	
+	print ""
 
 def generate_pages():
 	pass
