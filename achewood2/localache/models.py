@@ -24,7 +24,7 @@ def AWGetURLTitle(urlstr):
 			u'\xf6', u'o'
 		).replace(
 			u'\xfc', u'u'
-		).encode('iso-8859-1')
+		).encode('utf-8', 'ignore')
 	return u'%s' % unicode(urlend.sub('', urlspec.sub('-', urlstr)).lower())
 
 #

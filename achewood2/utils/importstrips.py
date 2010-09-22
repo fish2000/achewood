@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from __future__ import with_statement
 
 import sys
@@ -11,7 +14,7 @@ from django.utils.html import strip_tags, strip_entities
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, UnicodeDammit
 from achewood2.utils.monkeypatch import memoize
 from achewood2.localache.models import AWComic, AWImage, AWCalendarMonth
 
@@ -229,7 +232,7 @@ def repairEntities(brokenText):
 	
 	for subSearch, subReplace in replacements:
 		fixedText = re.subn(subSearch, subReplace, fixedText)[0]
-	return fixedText
+	return UnicodeDammit(fixedText).unicode
 
 def main(argv=None):
 	mths = get_months()
@@ -280,7 +283,7 @@ def get_data(mths=None):
 				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
 				data = AWGetStripData(urlstring=strip)
-				print ">>>\t %s\t %s" % (d, data['title'],)
+				print u">>>\t %s\t %s" % (d, UnicodeDammit(data['title']).unicode) #.decode('ascii', 'ignore')
 				c = AWComic()
 				#print ">>>\t Creating new strip..."
 				c.postdate = datetime.date(
