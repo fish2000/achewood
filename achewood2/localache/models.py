@@ -4,9 +4,7 @@ try:
 	import re2 as re
 except ImportError:
 	import re
-	#print "Using standard library regexes"
 else:
-	#print "Using Google RE2 regexes (fallback to standard library)"
 	re.set_fallback_notification(re.FALLBACK_WARNING)
 
 import os, urlparse, hashlib
@@ -96,7 +94,6 @@ class AWBaseMorsel(models.Model):
 	
 	def save(self, force_insert=False, force_update=False):
 		self.modifydate = datetime.now()
-		#super(AWBaseMorsel, self).save(force_insert, force_update)
 		self.urlstring = AWGetURLTitle(self.title)
 		if len(self.urlstring) < 1:
 			self.urlstring = AWGetURLTitle(self.pk)
@@ -107,7 +104,6 @@ class AWBaseMorsel(models.Model):
 	
 	def __str__(self):
 		return str(self.title)
-
 
 
 class AWBaseImage(ICCImageModel):
@@ -177,19 +173,6 @@ class AWBaseImage(ICCImageModel):
 	def get_absolute_url(self):
 		return u"%s" % self.image.url
 	
-	def fix_me(self):
-		from django.db import connection, transaction
-		if self.image.name and self.id:
-			print "Fixing %s..." % self.id
-			c = connection.cursor()
-			c.execute("""
-				UPDATE localache_awimage SET image = "%s" where id = %s
-			""" % (
-				self.image.name.replace('images/_comics', 'images'),
-				self.id,
-			))
-			transaction.commit_unless_managed()
-	
 	def __str__(self):
 		if len(self.caption) > 1:
 			return "%s (%s)" % (self.id, strip_tags(self.caption))
@@ -231,7 +214,6 @@ class AWComic(AWBaseMorsel):
 		null=True,
 		max_length=255)
 	asseturlstring = models.CharField(verbose_name="Strip Assetbar.com URL String",
-		#default=None,
 		unique=True,
 		blank=False,
 		null=False,
@@ -271,7 +253,6 @@ class AWCalendarMonth(AWBaseMorsel):
 	
 	objects = AWCalendarMonthManager()
 	calendardate = models.DateField('First date',
-		#default=date.today,
 		unique=True,
 		blank=False,
 		null=False,
@@ -300,13 +281,11 @@ def create_testuser(app, created_models, verbosity, **kwargs):
 	try:
 		auth_models.User.objects.get(username='achewood')
 	except auth_models.User.DoesNotExist:
-		#logg.info('Creating test user: achewood')
 		print '*' * 80
 		print 'Creating test user -- login: achewood, password: entropy9'
 		print '*' * 80
 		assert auth_models.User.objects.create_superuser('achewood', 'fish2000@github.com', 'entropy9')
 	else:
-		#logg.info('Test user achewood already exists.')
 		print 'Test user achewood already exists.'
 
 signals.post_syncdb.connect(
