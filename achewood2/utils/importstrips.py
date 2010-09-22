@@ -214,6 +214,22 @@ def AWGetTemporaryFileForURL(url, **kwargs):
 	else:
 		return None
 
+# backported from original script
+def repairEntities(brokenText):
+	fixedText = brokenText
+	replacements = [(r'&Atilde;&reg;','&icirc;'),
+					(r'&Atilde;&copy;','&eacute;'),
+					(r'&acirc;&euro;&trade;','&rsquo;'),
+					(r'&#147;','&lsquo;'),
+					(r'&#148;','&rsquo;'),
+					(r'&Acirc;&cent;','&cent;'),
+					(r'&Acirc;&rsquo;','&rsquo;'),
+					(r' & ',' &amp; ')
+	]
+	
+	for subSearch, subReplace in replacements:
+		fixedText = re.subn(subSearch, subReplace, fixedText)[0]
+	return unicode(fixedText, 'utf-8')
 
 
 
@@ -247,8 +263,8 @@ def get_data():
 					int(data['month']),
 					int(data['day']),
 				)
-				c.title = data['title']
-				c.alttext = data['alttxt']
+				c.title = repairEntities(data['title'])
+				c.alttext = repairEntities(data['alttxt'])
 				c.alturl = data['url']
 				c.asseturlstring = data['urlstring']
 				c.dialogue = data['dialogue']
