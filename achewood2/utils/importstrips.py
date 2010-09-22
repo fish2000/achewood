@@ -232,15 +232,16 @@ def repairEntities(brokenText):
 	return fixedText
 
 def main(argv=None):
-	get_data()
+	mths = get_months()
+	get_data(mths)
 	get_images()
 	#generate_pages()
 	return 0
 
-def get_data():
+
+def get_months():
 	print "Getting archive months from main URL..."
 	mths = AWGetAssetbarMonths()
-	
 	print "Got %s total months" % len(mths)
 	
 	for yyyy, mm in mths:
@@ -251,6 +252,15 @@ def get_data():
 			mth.data = urllib2.urlopen(mth.url).read()
 			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
 			mth.save()
+	return mths
+
+
+def get_data(mths=None):
+	
+	if not mths:
+		print "Getting archive months from main URL..."
+		mths = AWGetAssetbarMonths()
+		print "Got %s total months" % len(mths)
 	
 	for yyyy, mm in mths:
 		mth = AWCalendarMonth.objects.month(yyyy, mm)
@@ -262,7 +272,7 @@ def get_data():
 			mth.save()
 		#bar = AWAssetbarURLStringsForMonth(yyyy, mm)
 		bar = AWAssetbarURLStringsForMonth(data=mth.data)
-		print "%s %s: %s strips" % (monthnames[int(mm)], yyyy, len(bar))
+		print "%s %s: %s strips" % (monthnames[int(mm)].capitalize(), yyyy, len(bar))
 		
 		for d, strip in bar.items():
 			
@@ -272,7 +282,7 @@ def get_data():
 				data = AWGetStripData(urlstring=strip)
 				print ">>>\t %s\t %s" % (d, data['title'],)
 				c = AWComic()
-				print ">>>\t Creating new strip..."
+				#print ">>>\t Creating new strip..."
 				c.postdate = datetime.date(
 					int(data['year']),
 					int(data['month']),
@@ -302,12 +312,12 @@ def get_images():
 		if not c.image:
 			t = AWGetTemporaryFileForURL(c.imageurl)
 			if t:
-				print ">>>\t Creating new image..."
 				tn = "%s.gif" % AWAssetbarDate(
 					int(data['year']),
 					int(data['month']),
 					int(data['day']),
 				)
+				print ">>>\t New image: %s" % tn
 				cim = AWImage()
 				cim.image.save(tn, File(t))
 				cim.save()
