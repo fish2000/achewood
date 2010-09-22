@@ -1,4 +1,13 @@
-import os, re, urlparse
+try:
+	import re2 as re
+except ImportError:
+	import re
+	#print "Using standard library regexes"
+else:
+	#print "Using Google RE2 regexes (fallback to standard library)"
+	re.set_fallback_notification(re.FALLBACK_WARNING)
+
+import os, urlparse
 from django.db import models
 from django.db.models import signals
 from django.conf import settings

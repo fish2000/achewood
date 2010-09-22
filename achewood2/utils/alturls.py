@@ -7,7 +7,7 @@ setup_environ(settings)
 import re, urllib2, urlparse, datetime
 from django.core.exceptions import ObjectDoesNotExist
 from achewood2.utils.monkeypatch import memoize
-from achewood2.utils.importstrips import AWAchewoodDate
+from achewood2.utils.importstrips import AWAchewoodDate, AWGetStripAchewoodData
 from achewood2.localache.models import AWComic, AWImage, AWCalendarMonth
 
 
@@ -18,6 +18,14 @@ def get_alturls():
 	print ""
 	
 	for c in aurls:
+		
+		if str(c.alturl) == "None":
+			print "###\t %s\t Fixing..." % AWAchewoodDate(c.postdate.year, c.postdate.month, c.postdate.day)
+			#data = AWGetStripAchewoodData(urlstring=c.asseturlstring)
+			data = AWGetStripAchewoodData(c.postdate.year, c.postdate.month, c.postdate.day)
+			c.alturl = data['url']
+			c.save()
+		
 		print "---\t %s\t %s" % (AWAchewoodDate(c.postdate.year, c.postdate.month, c.postdate.day), c.alturl)
 
 

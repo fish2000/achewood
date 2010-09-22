@@ -9,7 +9,16 @@ from django.core.management import setup_environ
 from achewood2 import settings
 setup_environ(settings)
 
-import re, urllib2, urlparse, datetime
+try:
+	import re2 as re
+except ImportError:
+	import re
+	#print "Using standard library regexes"
+else:
+	#print "Using Google RE2 regexes (fallback to standard library)"
+	re.set_fallback_notification(re.FALLBACK_WARNING)
+
+import urllib2, urlparse, datetime
 from django.utils.html import strip_tags, strip_entities
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files import File
@@ -189,8 +198,8 @@ def AWGetStripData(yyyy=None, mm=None, dd=None, urlstring=None):
 	
 	out = bar
 	out.update({
-		'url': AWGetStripAchewoodData(urlstring=urlstring).get('url'),
-		'dialogue': AWGetStripDialogue(urlstring=urlstring)
+		'url': AWGetStripAchewoodData(yyyy, mm, dd).get('url'),
+		'dialogue': AWGetStripDialogue(yyyy, mm, dd),
 	})
 	return out
 
@@ -322,9 +331,9 @@ def get_images():
 			t = AWGetTemporaryFileForURL(c.imageurl)
 			if t:
 				tn = "%s.gif" % AWAssetbarDate(
-					int(data['year']),
-					int(data['month']),
-					int(data['day']),
+					int(c.postdate.year),
+					int(c.postdate.month),
+					int(c.postdate.day),
 				)
 				print ">>>\t New image: %s" % tn
 				cim = AWImage()
