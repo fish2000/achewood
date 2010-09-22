@@ -244,15 +244,22 @@ def get_data():
 	print "Got %s total months" % len(mths)
 	
 	for yyyy, mm in mths:
-		
 		mth = AWCalendarMonth.objects.month(yyyy, mm)
 		if not mth.id:
-			print "Caching month..."
+			print "Caching month: %s %s" % (monthnames[int(mm)].capitalize(), yyyy)
 			mth.url = "http://m.assetbar.com/achewood/archive?start=%s" % AWAssetbarDate(yyyy, mm, 1)
 			mth.data = urllib2.urlopen(mth.url).read()
 			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
 			mth.save()
-		
+	
+	for yyyy, mm in mths:
+		mth = AWCalendarMonth.objects.month(yyyy, mm)
+		if not mth.id:
+			print "Caching month: %s %s" % (monthnames[int(mm)].capitalize(), yyyy)
+			mth.url = "http://m.assetbar.com/achewood/archive?start=%s" % AWAssetbarDate(yyyy, mm, 1)
+			mth.data = urllib2.urlopen(mth.url).read()
+			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
+			mth.save()
 		#bar = AWAssetbarURLStringsForMonth(yyyy, mm)
 		bar = AWAssetbarURLStringsForMonth(data=mth.data)
 		print "%s %s: %s strips" % (monthnames[int(mm)], yyyy, len(bar))
