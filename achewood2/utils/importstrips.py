@@ -248,12 +248,12 @@ def get_data():
 		print "%s %s: %s strips" % (monthnames[int(mm)], yyyy, len(bar))
 		
 		for d, strip in bar.items():
-			data = AWGetStripData(urlstring=strip)
-			print ">>>\t %s\t %s" % (d, data['title'],)
 			
 			try:
-				c = AWComic.objects.get(asseturlstring=data['urlstring'])
+				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
+				data = AWGetStripData(urlstring=strip)
+				print ">>>\t %s\t %s" % (d, data['title'],)
 				c = AWComic()
 				print ">>>\t Creating new strip..."
 				c.postdate = datetime.date(
@@ -268,7 +268,9 @@ def get_data():
 				c.dialogue = data['dialogue']
 				c.imageurl = data['imgurl']
 				c.save()
-		
+			else:
+				print "---\t %s\t %s" % (d, c.title,)
+			
 		print ""
 	
 	print ""
