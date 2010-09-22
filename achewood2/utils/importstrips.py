@@ -18,7 +18,7 @@ else:
 	#print "Using Google RE2 regexes (fallback to standard library)"
 	re.set_fallback_notification(re.FALLBACK_WARNING)
 
-import urllib2, urlparse, datetime
+import os, urllib2, urlparse, datetime
 from django.utils.html import strip_tags, strip_entities
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files import File
@@ -209,6 +209,24 @@ def AWGetAssetbarMonths(url="http://m.assetbar.com/achewood/archive"):
 	index_pages = [u.split('=')[1] for u in monthly_re.findall(pageText)]
 	return map(lambda m: (m[0:4], m[4:6]), index_pages)
 
+def AWGetFilenameForURL(url, default=None):
+	urlpieces = urlparse.urlparse(str(url))
+	try:
+		return os.path.basename(urlpieces[2])
+	except IndexError:
+		return default
+	return default
+
+def AWGetSuffixForURL(url, default=None):
+	fn = AWGetFilenameForURL(url, default)
+	if fn:
+		if not fn.rfind('.') == -1:
+			try:
+				return fn.rsplit('.', 1)[1].lower()
+			except IndexError:
+				return default
+	return default
+
 def AWGetTemporaryFileForURL(url, **kwargs):
 	if str(url).startswith('http'):
 		suffix = "gif"
@@ -228,6 +246,8 @@ def AWGetTemporaryFileForURL(url, **kwargs):
 		return itemp
 	else:
 		return None
+
+
 
 # backported from original script
 def repairEntities(brokenText):
@@ -249,7 +269,7 @@ def repairEntities(brokenText):
 def main(argv=None):
 	mths = get_months()
 	get_data(mths)
-	#get_images()
+	get_images()
 	#generate_pages()
 	return 0
 
@@ -318,8 +338,8 @@ def get_data(mths=None):
 				c.save()
 			else:
 				print "---\t %s\t %s" % (d, c.title,)
-				c.urlstring = ""
-				c.save()
+				#c.urlstring = ""
+				#c.save()
 			
 		print ""
 	
@@ -327,25 +347,39 @@ def get_data(mths=None):
 
 def get_images():
 	
-	comix = AWComic.objects.all()
+	comix = AWComic.objects.order_by('postdate')
 	
 	print "Getting images for %s cached comics..." % comix.count()
 	
 	for c in comix:
-		if not c.image:
-			t = AWGetTemporaryFileForURL(c.imageurl)
+		
+		try:
+			im = c.awimage
+			
+			if im == None:
+				raise ObjectDoesNotExist
+			
+		except ObjectDoesNotExist:
+			suffix = AWGetSuffixForURL(c.imageurl, default='gif')
+			t = AWGetTemporaryFileForURL(c.imageurl, suffix=suffix)
 			if t:
-				tn = "%s.gif" % AWAssetbarDate(
+				tn = "%s.%s" % (AWAssetbarDate(
 					int(c.postdate.year),
 					int(c.postdate.month),
 					int(c.postdate.day),
-				)
-				print ">>>\t New image: %s" % tn
+				), suffix)
+				#print ">>>\t New image: %s" % tn
 				cim = AWImage()
+				cim.comic = c
+				cim.save()
+				
 				cim.image.save(tn, File(t))
 				cim.save()
-				c.image = cim
-				c.save()
+				
+				print ">>>\t New image: %s" % os.path.basename(cim.image.name)
+				#c.save()
+		else:
+			print "---\t Existing image: %s" % os.path.basename(im.image.name)
 	
 	print ""
 

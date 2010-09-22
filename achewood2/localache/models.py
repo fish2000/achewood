@@ -108,7 +108,7 @@ class AWBaseMorsel(models.Model):
 
 
 
-class AWBaseImage(ImageModel):
+class AWBaseImage(ICCImageModel):
 	class Meta:
 		abstract = True
 		verbose_name = "base image"
@@ -117,7 +117,7 @@ class AWBaseImage(ImageModel):
 	class IKOptions:
 		spec_module = 'achewood2.localache.imagespecs'
 		cache_dir = '_ikcache'
-		#icc_dir = '_ikicc'
+		icc_dir = '_ikicc'
 		image_field = 'image' # confusatron
 		storage = pf
 	
@@ -184,24 +184,12 @@ class AWBaseImage(ImageModel):
 		return u"" + self.__str__()
 
 
-class AWImage(AWBaseImage):
-	class Meta:
-		abstract = False
-		verbose_name = "achewood strip image file"
-		verbose_name_plural = "achewood strip image files"
-
-
 class AWComic(AWBaseMorsel):
 	class Meta:
 		abstract = False
 		verbose_name = "achewood strip"
 		verbose_name_plural = "achewood strips"
 	
-	image = models.ForeignKey(AWImage,
-		verbose_name="Comic Image",
-		blank=True,
-		null=True,
-		editable=True)
 	imageurl = models.URLField(verbose_name="Original Image URL",
 		verify_exists=False,
 		default=None,
@@ -246,6 +234,18 @@ class AWComic(AWBaseMorsel):
 	def _del_asseturl(self):
 		self.asseturlstring = None
 	asseturl = property(_get_asseturl, _set_asseturl, _del_asseturl)
+
+class AWImage(AWBaseImage):
+	class Meta:
+		abstract = False
+		verbose_name = "achewood strip image file"
+		verbose_name_plural = "achewood strip image files"
+	
+	comic = models.OneToOneField(AWComic,
+		verbose_name="Comic",
+		blank=True,
+		null=True,
+		editable=True)
 
 class AWCalendarMonth(AWBaseMorsel):
 	class Meta:
