@@ -28,11 +28,7 @@
 <div id="theDate">{{ title }} | {{ postdate }}</div>
 <a href="{{ nextpage }}"><img id="theComic" src="{{ comic }}"/></a>
 
-{% if alturl %}
-	<a href="{{ alturl }}"><div id="theComment">{{ alttxt }}</div></a>
-{% else %}
-	<div id="theComment">{{ alttxt }}</div>
-{% endif %}
+<div id="theComment">{{ alttxt }}</div>
 
 </body>
 </html>

@@ -12,6 +12,7 @@ assets/*.html
 *.svn
 *.pyc
 *.db
+*.db*
 *.bk
 *.orig
 *~

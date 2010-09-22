@@ -120,12 +120,11 @@ class AWBaseImage(ICCImageModel):
 		storage = pf
 	
 	@staticmethod
-	def _gettargetpath():
+	def gettargetpath():
 		return os.path.join(
 			settings.MEDIA_ROOT,
 			AWImage._meta.get_field('image').upload_to
 		)
-	targetpath = property(_gettargetpath)
 	
 	image = models.ImageField(verbose_name="Image",
 		storage=pf,
@@ -245,6 +244,13 @@ class AWComic(AWBaseMorsel):
 		)
 	assetbardate = property(_get_assetbardate)
 	
+	@memoize
+	def _get_imagename(self):
+		try:
+			return self.awimage.image.name
+		except ObjectDoesNotExist:
+			return ""
+	imagename = property(_get_imagename)
 
 class AWImage(AWBaseImage):
 	class Meta:
@@ -257,6 +263,21 @@ class AWImage(AWBaseImage):
 		blank=True,
 		null=True,
 		editable=True)
+	
+	@memoize
+	def _get_imagename(self):
+		try:
+			return self.image.name
+		except ObjectDoesNotExist:
+			return ""
+	imagename = property(_get_imagename)
+	
+	def __str__(self):
+		return str(self.imagename)
+	
+	def __unicode__(self):
+		return unicode(self.imagename)
+	
 
 class AWCalendarMonth(AWBaseMorsel):
 	class Meta:

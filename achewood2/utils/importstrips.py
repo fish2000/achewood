@@ -17,6 +17,7 @@ else:
 	re.set_fallback_notification(re.FALLBACK_WARNING)
 
 import os, urllib2, urlparse, datetime
+from django.db.models import Q
 from django.utils.html import strip_tags, strip_entities
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files import File
@@ -266,10 +267,16 @@ def repairEntities(brokenText):
 	return fixedText
 
 def main(argv=None):
-	#mths = get_months()
-	#get_data(mths)
-	#get_images()
-	generate_pages()
+	mths = get_months()
+	get_data(mths)
+	
+	cmx = AWComic.objects.filter(visible=True).order_by('postdate')
+	
+	get_alturls(cmx)
+	get_dialogue(cmx)
+	
+	get_images(cmx)
+	generate_pages(cmx)
 	return 0
 
 
@@ -310,12 +317,16 @@ def get_data(mths=None):
 		
 		for d, strip in bar.items():
 			
+			
 			try:
 				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
-				dd = int(d[2:4])
-				#data = AWGetStripData(urlstring=strip)
-				data = AWGetStripData(yyyy, int(mm), dd)
+				#data = AWGetStripData(yyyy, int(mm), dd)
+				try:
+					dd = int(d[2:4])
+					data = AWGetStripAssetbarData(yyyy, int(mm), dd)
+				except ValueError:
+					data = AWGetStripAssetbarData(urlstring=strip)
 				
 				print u">>>\t %s\t %s" % (
 					d, unicode(repairEntities(data['title']).decode('utf-8', "replace"))
@@ -329,22 +340,56 @@ def get_data(mths=None):
 				)
 				c.title = repairEntities(data['title']).decode('utf-8', "replace").encode('iso-8859-2', "replace")
 				c.alttext = repairEntities(data['alttxt']).decode('utf-8', "replace").encode('iso-8859-1', "replace")
-				c.alturl = data['url']
 				c.asseturlstring = data['urlstring']
-				c.dialogue = data['dialogue']
 				c.imageurl = data['imgurl']
+				
+				#c.alturl = data['url']
+				#c.dialogue = data['dialogue']
+				c.alturl = 'later'
+				c.dialogue = 'later'
+				
 				c.save()
 			else:
 				print "---\t %s\t %s" % (d, c.title,)
+				#c.title = repairEntities(data['title']).decode('utf-8', "replace").encode('iso-8859-2', "replace")
+				#c.alttext = repairEntities(data['alttxt']).decode('utf-8', "replace").encode('iso-8859-1', "replace")
+				#c.save()
 			
 		print ""
 	
 	print ""
 
-def get_images():
+def get_alturls(comix=None):
+	if comix == None:
+		comix = AWComic.objects.filter(visible=True).order_by('postdate')
 	
-	comix = AWComic.objects.order_by('postdate')
+	print ""
 	
+	print "Getting alternative URLs for %s cached comics..." % comix.count()
+	for c in comix.filter(Q(alturl__istartswith="later") | Q(alturl__isnull=True) | Q(alturl__exact="")):
+		yyyy, mm, dd = (c.postdate.year, c.postdate.month, c.postdate.day)
+		c.alturl = AWGetStripAchewoodData(yyyy, mm, dd).get('url')
+		c.save()
+		print "---\t %s\t %s" % (c.assetbardate, c.alturl)
+
+def get_dialogue(comix=None):
+	if comix == None:
+		comix = AWComic.objects.filter(visible=True).order_by('postdate')
+	
+	print ""
+	
+	print "Getting dialogue for %s cached comics..." % comix.count()
+	for c in comix.filter(Q(dialogue__istartswith="later") | Q(alturl__isnull=True)):
+		yyyy, mm, dd = (c.postdate.year, c.postdate.month, c.postdate.day)
+		c.dialogue = AWGetStripDialogue(yyyy, mm, dd).get('url')
+		c.save()
+		print "---\t %s\t %s ..." % (c.assetbardate, c.dialogue[0:100])
+
+def get_images(comix=None):
+	if comix == None:
+		comix = AWComic.objects.filter(visible=True).order_by('postdate')
+	
+	print ""
 	print "Getting images for %s cached comics..." % comix.count()
 	
 	for c in comix:
@@ -353,23 +398,23 @@ def get_images():
 			im = c.awimage
 			
 			if im == None:
+				print "WTF: NoneType found for c.awimage (comic %s)" % c.id
 				raise ObjectDoesNotExist
 			
 		except ObjectDoesNotExist:
 			suffix = AWGetSuffixForURL(c.imageurl, default='gif')
-			t = AWGetTemporaryFileForURL(c.imageurl, suffix=suffix)
-			if t:
-				tn = "%s.%s" % (AWAssetbarDate(
-					int(c.postdate.year),
-					int(c.postdate.month),
-					int(c.postdate.day),
-				), suffix)
+			tn = "%s.%s" % (c.assetbardate, suffix)
+			where = os.path.join(AWImage.gettargetpath(), tn)
+			
+			if os.path.exists(where):
+				ff = File(open(where, 'r'))
+			else:
+				ff = File(AWGetTemporaryFileForURL(c.imageurl, suffix=suffix))
 				
+			if ff:
 				cim = AWImage()
 				cim.comic = c
-				#cim.save()
-				
-				cim.image.save(tn, File(t))
+				cim.image.save(tn, ff)
 				cim.save()
 				
 				print ">>>\t New image: %s" % os.path.basename(cim.image.name)
@@ -378,8 +423,9 @@ def get_images():
 	
 	print ""
 
-def generate_pages():
-	comix = AWComic.objects.filter(visible=True).order_by('postdate')
+def generate_pages(comix=None):
+	if comix == None:
+		comix = AWComic.objects.filter(visible=True).order_by('postdate')
 	
 	for i in xrange(comix.count()):
 		this_comic = comix[i]
@@ -414,9 +460,9 @@ def generate_pages():
 					monthabbrevs[int(this_comic.postdate.month)].capitalize(),
 					this_comic.postdate.year,
 				),
-				'comic': this_comic.awimage.image.name,
+				'comic': this_comic.imagename,
 				'alttxt': this_comic.alttext,
-				'alturl': alturl,
+				#'alturl': alturl,
 			}).encode('utf-8'))
 		
 		
