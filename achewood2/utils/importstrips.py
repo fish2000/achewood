@@ -31,7 +31,7 @@ from achewood2.localache.models import AWComic, AWImage, AWCalendarMonth
 def soup(url):
 	uh = urllib2.urlopen(url)
 	u = uh.read()
-	uh.close
+	uh.close()
 	return BeautifulSoup(u)
 
 title_re = re.compile(r'<h2>(.*?)&nbsp;')
@@ -104,8 +104,10 @@ def AWGetStripAssetbarData(yyyy=None, mm=None, dd=None, urlstring=None):
 	... any of whose members might be None if it couldn't be sorted out.
 	"""
 	if not urlstring:
-		nodes = soup(AWAssetbarURL(yyyy, mm, dd))
-		urlstring = AWAssetbarURLStringsForMonth(yyyy, mm)[AWAchewoodDate(yyyy, mm, dd)]
+		assetbarurl = AWAssetbarURL(yyyy, mm, dd)
+		nodes = soup(assetbarurl)
+		#urlstring = AWAssetbarURLStringsForMonth(yyyy, mm)[AWAchewoodDate(yyyy, mm, dd)]
+		urlstring = assetbarurl.replace('http://m.assetbar.com/achewood/', '')
 	else:
 		nodes = soup(AWAssetbarURL(urlstring=urlstring))
 	
@@ -184,7 +186,8 @@ def AWGetStripDialogue(yyyy=None, mm=None, dd=None, urlstring=None):
 	dlg = filter(lambda li: li.find('a', {'class':"searchlink", 'href':re.compile("%s$" % AWAchewoodDate(yyyy, mm, dd))}), dsearch.findAll('li'))
 	
 	if len(dlg) == 1:
-		return strip_entities(strip_tags(dlg.pop()))
+		#return strip_entities(strip_tags(dlg.pop()))
+		return strip_tags(dlg.pop())
 	return u""
 
 @memoize
@@ -329,7 +332,7 @@ def get_data(mths=None):
 					data = AWGetStripAssetbarData(urlstring=strip)
 				
 				print u">>>\t %s\t %s" % (
-					d, unicode(repairEntities(data['title']).decode('utf-8', "replace"))
+					d, data['title']
 				)
 				
 				c = AWComic()
@@ -338,8 +341,8 @@ def get_data(mths=None):
 					int(data['month']),
 					int(data['day']),
 				)
-				c.title = repairEntities(data['title']).decode('utf-8', "replace").encode('iso-8859-2', "replace")
-				c.alttext = repairEntities(data['alttxt']).decode('utf-8', "replace").encode('iso-8859-1', "replace")
+				c.title = repairEntities(data['title'])
+				c.alttext = repairEntities(data['alttxt'])
 				c.asseturlstring = data['urlstring']
 				c.imageurl = data['imgurl']
 				
@@ -351,9 +354,6 @@ def get_data(mths=None):
 				c.save()
 			else:
 				print "---\t %s\t %s" % (d, c.title,)
-				#c.title = repairEntities(data['title']).decode('utf-8', "replace").encode('iso-8859-2', "replace")
-				#c.alttext = repairEntities(data['alttxt']).decode('utf-8', "replace").encode('iso-8859-1', "replace")
-				#c.save()
 			
 		print ""
 	
@@ -381,7 +381,7 @@ def get_dialogue(comix=None):
 	print "Getting dialogue for %s cached comics..." % comix.count()
 	for c in comix.filter(Q(dialogue__istartswith="later") | Q(alturl__isnull=True)):
 		yyyy, mm, dd = (c.postdate.year, c.postdate.month, c.postdate.day)
-		c.dialogue = AWGetStripDialogue(yyyy, mm, dd).get('url')
+		c.dialogue = AWGetStripDialogue(yyyy, mm, dd)
 		c.save()
 		print "---\t %s\t %s ..." % (c.assetbardate, c.dialogue[0:100])
 
@@ -394,9 +394,10 @@ def get_images(comix=None):
 	
 	for c in comix:
 		
+		print ""
+		
 		try:
 			im = c.awimage
-			
 			if im == None:
 				print "WTF: NoneType found for c.awimage (comic %s)" % c.id
 				raise ObjectDoesNotExist
@@ -408,8 +409,10 @@ def get_images(comix=None):
 			
 			if os.path.exists(where):
 				ff = File(open(where, 'r'))
+				print "---\t Existing image file: %s" % tn
 			else:
 				ff = File(AWGetTemporaryFileForURL(c.imageurl, suffix=suffix))
+				print ">>>\t New image file: %s" % tn
 				
 			if ff:
 				cim = AWImage()
@@ -417,9 +420,9 @@ def get_images(comix=None):
 				cim.image.save(tn, ff)
 				cim.save()
 				
-				print ">>>\t New image: %s" % os.path.basename(cim.image.name)
+				print ">>>\t New image object: %s" % os.path.basename(cim.image.name)
 		else:
-			print "---\t Existing image: %s" % os.path.basename(im.image.name)
+			print "---\t Existing image object: %s" % os.path.basename(im.image.name)
 	
 	print ""
 

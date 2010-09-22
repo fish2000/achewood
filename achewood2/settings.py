@@ -100,5 +100,6 @@ INSTALLED_APPS = (
 	'achewood2.localache',
 )
 
-
+DEFAULT_CHARSET = 'utf-8'
 PIL_IMAGEFILE_MAXBLOCK = 1024 * 2 ** 10
+
