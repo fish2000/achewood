@@ -257,16 +257,16 @@ def create_testuser(app, created_models, verbosity, **kwargs):
 	if not settings.DEBUG:
 		return
 	try:
-		auth_models.User.objects.get(username='fish')
+		auth_models.User.objects.get(username='achewood')
 	except auth_models.User.DoesNotExist:
-		#logg.info('Creating test user: fish')
+		#logg.info('Creating test user: achewood')
 		print '*' * 80
-		print 'Creating test user -- login: fish, password: eatshit'
+		print 'Creating test user -- login: achewood, password: entropy9'
 		print '*' * 80
-		assert auth_models.User.objects.create_superuser('fish', 'fish2000@gmail.com', 'eatshit')
+		assert auth_models.User.objects.create_superuser('achewood', 'fish2000@github.com', 'eatshit')
 	else:
-		#logg.info('Test user fish already exists.')
-		print 'Test user fish already exists.'
+		#logg.info('Test user achewood already exists.')
+		print 'Test user achewood already exists.'
 
 signals.post_syncdb.connect(
 	create_testuser,
