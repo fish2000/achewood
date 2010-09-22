@@ -263,7 +263,7 @@ def create_testuser(app, created_models, verbosity, **kwargs):
 		print '*' * 80
 		print 'Creating test user -- login: achewood, password: entropy9'
 		print '*' * 80
-		assert auth_models.User.objects.create_superuser('achewood', 'fish2000@github.com', 'eatshit')
+		assert auth_models.User.objects.create_superuser('achewood', 'fish2000@github.com', 'entropy9')
 	else:
 		#logg.info('Test user achewood already exists.')
 		print 'Test user achewood already exists.'
