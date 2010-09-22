@@ -232,6 +232,19 @@ class AWComic(AWBaseMorsel):
 	def _del_asseturl(self):
 		self.asseturlstring = None
 	asseturl = property(_get_asseturl, _set_asseturl, _del_asseturl)
+	
+	@memoize
+	def _get_assetbardate(self):
+		yyyy, mm, dd = (
+			int(self.postdate.year),
+			int(self.postdate.month),
+			int(self.postdate.day)
+		)
+		return "%04d%02d%02d" % (
+			(int(yyyy) < 100 and (2000+int(yyyy)) or int(yyyy)), int(mm), int(dd)
+		)
+	assetbardate = property(_get_assetbardate)
+	
 
 class AWImage(AWBaseImage):
 	class Meta:

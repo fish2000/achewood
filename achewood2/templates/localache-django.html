@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>{{ title }}</title>
+	<!-- Date: {{ postdate }} -->
+	<link rel="stylesheet" href="comic.css" type="text/css" media="screen,print" charset="utf-8">
+
+	<script type="text/javascript" src="shortcut.js"></script>
+	<script type="text/javascript">
+	
+		shortcut.add("Right", function() {
+			location.href = "{{ nextpage }}";
+		});
+		
+		shortcut.add("Left", function() {
+			//history.back();
+			location.href = "{{ previouspage }}";
+		});
+	
+	</script>
+	
+
+</head>
+<body>
+
+<div id="theDate">{{ title }} | {{ postdate }}</div>
+<a href="{{ nextpage }}"><img id="theComic" src="{{ comic }}"/></a>
+
+{% if alturl %}
+	<a href="{{ alturl }}"><div id="theComment">{{ alttxt }}</div></a>
+{% else %}
+	<div id="theComment">{{ alttxt }}</div>
+{% endif %}
+
+</body>
+</html>

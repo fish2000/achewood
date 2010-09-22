@@ -21,6 +21,7 @@ from django.utils.html import strip_tags, strip_entities
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
+from django.template.loader import render_to_string
 from BeautifulSoup import BeautifulSoup, UnicodeDammit
 from achewood2.utils.monkeypatch import memoize
 from achewood2.localache.models import AWComic, AWImage, AWCalendarMonth
@@ -265,10 +266,10 @@ def repairEntities(brokenText):
 	return fixedText
 
 def main(argv=None):
-	mths = get_months()
-	get_data(mths)
-	get_images()
-	#generate_pages()
+	#mths = get_months()
+	#get_data(mths)
+	#get_images()
+	generate_pages()
 	return 0
 
 
@@ -312,7 +313,9 @@ def get_data(mths=None):
 			try:
 				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
-				data = AWGetStripData(urlstring=strip)
+				dd = int(d[2:4])
+				#data = AWGetStripData(urlstring=strip)
+				data = AWGetStripData(yyyy, int(mm), dd)
 				
 				print u">>>\t %s\t %s" % (
 					d, unicode(repairEntities(data['title']).decode('utf-8', "replace"))
@@ -376,7 +379,48 @@ def get_images():
 	print ""
 
 def generate_pages():
-	pass
+	comix = AWComic.objects.filter(visible=True).order_by('postdate')
+	
+	for i in xrange(comix.count()):
+		this_comic = comix[i]
+		print "Processing HTML for %s" % this_comic.assetbardate
+		
+		if i < comix.count() - 1:
+			nextpage = '%s.html' % comix[i+1].assetbardate
+		else:
+			nextpage = "#"
+		
+		if i > 0:
+			previouspage = '%s.html' % comix[i-1].assetbardate
+		else:
+			previouspage = "#"
+		
+		if not this_comic.alturl.startswith('http://m.assetbar.com/achewood/one_strip'):
+			alturl = this_comic.alturl
+		else:
+			alturl = None
+		
+		tplout = os.path.join(settings.MEDIA_ROOT, "%s.html" % this_comic.assetbardate)
+		if os.path.exists(tplout):
+			os.remove(tplout)
+		
+		with open(tplout, 'w') as f:
+			f.write(render_to_string("localache-django.html", {
+				'nextpage': nextpage,
+				'previouspage': previouspage,
+				'title': this_comic.title,
+				'postdate': "%02s %s %04s" % (
+					this_comic.postdate.day,
+					monthabbrevs[int(this_comic.postdate.month)].capitalize(),
+					this_comic.postdate.year,
+				),
+				'comic': this_comic.awimage.image.name,
+				'alttxt': this_comic.alttext,
+				'alturl': alturl,
+			}).encode('utf-8'))
+		
+		
+		
 
 
 if __name__ == "__main__":
