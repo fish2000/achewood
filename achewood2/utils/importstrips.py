@@ -229,9 +229,7 @@ def repairEntities(brokenText):
 	
 	for subSearch, subReplace in replacements:
 		fixedText = re.subn(subSearch, subReplace, fixedText)[0]
-	return unicode(fixedText, 'utf-8')
-
-
+	return fixedText
 
 def main(argv=None):
 	get_data()
@@ -270,21 +268,6 @@ def get_data():
 				c.dialogue = data['dialogue']
 				c.imageurl = data['imgurl']
 				c.save()
-				
-			"""
-			c = AWComic(
-				postdate=datetime.date(
-					int(data['year']),
-					int(data['month']),
-					int(data['day']),
-				),
-				title=data['title'],
-				alttext=data['alttxt'],
-				alturl=data['alturl'],
-				asseturlstring=data['urlstring'],
-				dialogue=data['dialogue'],
-			)
-			"""
 		
 		print ""
 	
