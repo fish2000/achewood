@@ -4,6 +4,9 @@ syntax: glob
 *.jpg
 *.jpeg
 *.png
+
+assets/*.html
+
 *.eprj
 *.tmproj
 *.svn
