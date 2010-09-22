@@ -13,7 +13,7 @@ from django.core.files import File
 from django.core.files.temp import NamedTemporaryFile
 from BeautifulSoup import BeautifulSoup
 from achewood2.utils.monkeypatch import memoize
-from achewood2.localache.models import AWComic, AWImage
+from achewood2.localache.models import AWComic, AWImage, AWCalendarMonth
 
 
 def soup(url):
@@ -58,7 +58,7 @@ def AWAssetbarURLStringsForMonth(yyyy=None, mm=None, data=None):
 		archurl = "http://m.assetbar.com/achewood/archive?start=%s" % AWAssetbarDate(yyyy, mm, 1)
 		records = soup(archurl).findAll('div', {'class': "one_record"})
 	else:
-		records = soup(data)
+		records = BeautifulSoup(data).findAll('div', {'class': "one_record"})
 	
 	return dict(zip(
 		map(lambda r: unicode(r.find('div', {'class':"title"}).contents[2]).replace('/', ''), records),
@@ -244,7 +244,17 @@ def get_data():
 	print "Got %s total months" % len(mths)
 	
 	for yyyy, mm in mths:
-		bar = AWAssetbarURLStringsForMonth(yyyy, mm)
+		
+		mth = AWCalendarMonth.objects.month(yyyy, mm)
+		if not mth.id:
+			print "Caching month..."
+			mth.url = "http://m.assetbar.com/achewood/archive?start=%s" % AWAssetbarDate(yyyy, mm, 1)
+			mth.data = urllib2.urlopen(mth.url).read()
+			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
+			mth.save()
+		
+		#bar = AWAssetbarURLStringsForMonth(yyyy, mm)
+		bar = AWAssetbarURLStringsForMonth(data=mth.data)
 		print "%s %s: %s strips" % (monthnames[int(mm)], yyyy, len(bar))
 		
 		for d, strip in bar.items():

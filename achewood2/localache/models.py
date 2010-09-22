@@ -31,10 +31,15 @@ def AWGetURLTitle(urlstr):
 # managers
 #
 class AWCalendarMonthManager(models.Manager):
+	"""
+	def __init__(self, fields=None, *args, **kwargs):
+		super(AWCalendarMonthManager, self).__init__(*args, **kwargs)
+		self._fields = fields
+	"""
 	def month(self, yyyy, mm):
-		d = date(yyyy, mm, 1)
+		d = date(int(yyyy), int(mm), 1)
 		try:
-			return self.objects.get(calendardate=d)
+			return AWCalendarMonth.objects.get(calendardate=d)
 		except ObjectDoesNotExist:
 			return AWCalendarMonth(calendardate=d)
 
