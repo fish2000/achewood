@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 try:
 	import re2 as re
 except ImportError:
@@ -7,7 +9,7 @@ else:
 	#print "Using Google RE2 regexes (fallback to standard library)"
 	re.set_fallback_notification(re.FALLBACK_WARNING)
 
-import os, urlparse
+import os, urlparse, hashlib
 from django.db import models
 from django.db.models import signals
 from django.conf import settings
@@ -133,7 +135,7 @@ class AWBaseImage(ICCImageModel):
 		storage=pf,
 		null=True,
 		blank=True,
-		upload_to='images/_comics',
+		upload_to='images',
 		height_field='h',
 		width_field='w',
 		max_length=255)
@@ -167,12 +169,26 @@ class AWBaseImage(ICCImageModel):
 	
 	@memoize
 	def _get_hash(self):
-		return FSGetHashForFilePath(self.image.path)
+		with open(self.image.path, 'rb') as f:
+			return hashlib.sha1(f.read()).hexdigest()
 	imagehash = property(_get_hash)
 	
 	@memoize
 	def get_absolute_url(self):
 		return u"%s" % self.image.url
+	
+	def fix_me(self):
+		from django.db import connection, transaction
+		if self.image.name and self.id:
+			print "Fixing %s..." % self.id
+			c = connection.cursor()
+			c.execute("""
+				UPDATE localache_awimage SET image = "%s" where id = %s
+			""" % (
+				self.image.name.replace('images/_comics', 'images'),
+				self.id,
+			))
+			transaction.commit_unless_managed()
 	
 	def __str__(self):
 		if len(self.caption) > 1:
