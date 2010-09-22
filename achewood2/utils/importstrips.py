@@ -249,7 +249,7 @@ def repairEntities(brokenText):
 def main(argv=None):
 	mths = get_months()
 	get_data(mths)
-	get_images()
+	#get_images()
 	#generate_pages()
 	return 0
 
@@ -267,7 +267,7 @@ def get_months():
 			mth.data = urllib2.urlopen(mth.url).read()
 			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
 			mth.save()
-	return mths[90:]
+	return mths
 
 
 def get_data(mths=None):
@@ -298,7 +298,10 @@ def get_data(mths=None):
 				data = AWGetStripData(urlstring=strip)
 				#data = AWGetStripAssetbarData(urlstring=strip)
 				
-				print u">>>\t %s\t %s" % (d, unicode(repairEntities(data['title']), 'utf-8', errors='ignore'))
+				print u">>>\t %s\t %s" % (
+					d, #xmlcharref
+					unicode(repairEntities(data['title']).decode('utf-8', "replace"))#.encode('iso-8859-1', "replace")
+				)
 				
 				c = AWComic()
 				c.postdate = datetime.date(
@@ -306,8 +309,8 @@ def get_data(mths=None):
 					int(data['month']),
 					int(data['day']),
 				)
-				c.title = repairEntities(data['title'])
-				c.alttext = repairEntities(data['alttxt'])
+				c.title = repairEntities(data['title']).decode('utf-8', "replace").encode('iso-8859-2', "replace")
+				c.alttext = repairEntities(data['alttxt']).decode('utf-8', "replace").encode('iso-8859-1', "replace")
 				c.alturl = data['url']
 				c.asseturlstring = data['urlstring']
 				c.dialogue = data['dialogue']
@@ -315,6 +318,8 @@ def get_data(mths=None):
 				c.save()
 			else:
 				print "---\t %s\t %s" % (d, c.title,)
+				c.urlstring = ""
+				c.save()
 			
 		print ""
 	

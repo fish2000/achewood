@@ -16,22 +16,27 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import models as auth_models
 from django.contrib.auth.management import create_superuser
 from datetime import datetime, date
+from BeautifulSoup import UnicodeDammit
 from imagekit.models import ImageModel, ICCImageModel
 from achewood2.utils.monkeypatch import memoize
 
 # local-ish
 pf = FileSystemStorage(location="%s" % settings.MEDIA_ROOT)
-urlspec = re.compile("\W+", re.IGNORECASE)
+urlspec = re.compile("[^(_)\w]+", re.IGNORECASE)
 urlend = re.compile("\-$", re.IGNORECASE)
 
 @memoize
 def AWGetURLTitle(urlstr):
 	## umlaut subs from http://code.activestate.com/recipes/576507-sort-strings-containing-german-umlauts-in-correct-/
-	urlstr = str(urlstr).decode('iso-8859-1', 'ignore').lower().replace(
-			u'\xe4\x82\xe5\xa0', u'e'
+	urlstr = UnicodeDammit(urlstr).unicode.lower().replace(
+			u'\xc3\xa8', u'e'
 		).replace(
-			u'\xc4\x82\xc5\xa0', u'e'
+			u'\xe9', u'e'
 		).replace(
+		#	u'\xe4\x82\xe5\xa0', u'e'
+		#).replace(
+		#	u'\xc4\x82\xc5\xa0', u'e'
+		#).replace(
 			u'\xe4', u'a'
 		).replace(
 			u'\xf6', u'o'
@@ -39,18 +44,17 @@ def AWGetURLTitle(urlstr):
 			u'\xfc', u'u'
 		).replace(
 			u'\xfc', u'u'
-		).encode('utf-8', 'ignore')
+		).replace(
+			u"'", u''
+		).replace(
+			u"_", u'-'
+		)
 	return u'%s' % urlend.sub('', urlspec.sub('-', urlstr))
 
 #
 # managers
 #
 class AWCalendarMonthManager(models.Manager):
-	"""
-	def __init__(self, fields=None, *args, **kwargs):
-		super(AWCalendarMonthManager, self).__init__(*args, **kwargs)
-		self._fields = fields
-	"""
 	def month(self, yyyy, mm):
 		d = date(int(yyyy), int(mm), 1)
 		try:
@@ -90,6 +94,7 @@ class AWBaseMorsel(models.Model):
 	
 	def save(self, force_insert=False, force_update=False):
 		self.modifydate = datetime.now()
+		#super(AWBaseMorsel, self).save(force_insert, force_update)
 		self.urlstring = AWGetURLTitle(self.title)
 		if len(self.urlstring) < 1:
 			self.urlstring = AWGetURLTitle(self.pk)
