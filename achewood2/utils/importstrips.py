@@ -103,7 +103,7 @@ def AWGetStripAssetbarData(yyyy=None, mm=None, dd=None, urlstring=None):
 	content = nodes.find('div',{'id':'content'})
 	date = content.find('h2').find('span', {'class':"date"}).contents[0].split('/')
 	img = content.find('img')
-	m = title_re.search(str(content.find('h2')))
+	m = title_re.search(unicode(content.find('h2')))
 	
 	title = m.group(1)
 	img_url = urlparse.urljoin('http://m.assetbar.com/', img['src'], allow_fragments=False)
@@ -124,7 +124,7 @@ def AWGetStripAssetbarData(yyyy=None, mm=None, dd=None, urlstring=None):
 	})
 	return prevnext
 
-@memoize
+#@memoize
 def AWGetStripAchewoodData(yyyy=None, mm=None, dd=None, urlstring=None):
 	"""
 	Get a tuple of Achewood.com data for a given date
@@ -143,12 +143,17 @@ def AWGetStripAchewoodData(yyyy=None, mm=None, dd=None, urlstring=None):
 	
 	nodes = soup(AWAchewoodURL(yyyy, mm, dd))
 	
+	try:
+		alttxt = nodes.find('p', {'id':"comic_body"}).find('img')['title']
+	except TypeError:
+		alttxt = ""
+	
 	return {
-		'alttxt': nodes.find('p', {'id':"comic_body"}).find('img')['title'],
+		'alttxt': alttxt,
 		'url': nodes.find('p', {'id':"comic_body"}).find('a')['href'],
 	}
 
-@memoize
+#@memoize
 def AWGetStripDialogue(yyyy=None, mm=None, dd=None, urlstring=None):
 	"""
 	Get a strip's dialogue from ohnorobot.com for a given date.
@@ -174,7 +179,7 @@ def AWGetStripDialogue(yyyy=None, mm=None, dd=None, urlstring=None):
 		return strip_entities(strip_tags(dlg.pop()))
 	return u""
 
-@memoize
+#@memoize
 def AWGetStripData(yyyy=None, mm=None, dd=None, urlstring=None):
 	if urlstring:
 		bar = AWGetStripAssetbarData(urlstring=urlstring)
@@ -232,7 +237,8 @@ def repairEntities(brokenText):
 	
 	for subSearch, subReplace in replacements:
 		fixedText = re.subn(subSearch, subReplace, fixedText)[0]
-	return UnicodeDammit(fixedText).unicode
+	#return UnicodeDammit(fixedText).unicode
+	return fixedText
 
 def main(argv=None):
 	mths = get_months()
@@ -283,7 +289,8 @@ def get_data(mths=None):
 				c = AWComic.objects.get(asseturlstring=strip)
 			except ObjectDoesNotExist:
 				data = AWGetStripData(urlstring=strip)
-				print u">>>\t %s\t %s" % (d, UnicodeDammit(data['title']).unicode) #.decode('ascii', 'ignore')
+				#print u">>>\t %s\t %s" % (d, UnicodeDammit(data['title']).unicode)
+				print u">>>\t %s\t %s" % (d, repairEntities(data['title'])) # .decode('iso-8859-1')
 				c = AWComic()
 				#print ">>>\t Creating new strip..."
 				c.postdate = datetime.date(
