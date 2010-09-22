@@ -267,7 +267,7 @@ def get_months():
 			mth.data = urllib2.urlopen(mth.url).read()
 			mth.title = "%s %s" % (monthnames[int(mm)], yyyy)
 			mth.save()
-	return mths
+	return mths[90:]
 
 
 def get_data(mths=None):
@@ -298,7 +298,7 @@ def get_data(mths=None):
 				data = AWGetStripData(urlstring=strip)
 				#data = AWGetStripAssetbarData(urlstring=strip)
 				
-				print u">>>\t %s\t %s" % (d, repairEntities(data['title'])) # .decode('iso-8859-1')
+				print u">>>\t %s\t %s" % (d, unicode(repairEntities(data['title']), 'utf-8', errors='ignore'))
 				
 				c = AWComic()
 				c.postdate = datetime.date(

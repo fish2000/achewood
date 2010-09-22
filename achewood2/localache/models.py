@@ -27,7 +27,7 @@ urlend = re.compile("\-$", re.IGNORECASE)
 @memoize
 def AWGetURLTitle(urlstr):
 	## umlaut subs from http://code.activestate.com/recipes/576507-sort-strings-containing-german-umlauts-in-correct-/
-	urlstr = urlstr.lower().replace(#.decode('utf-8', 'ignore')
+	urlstr = str(urlstr).decode('iso-8859-1', 'ignore').lower().replace(
 			u'\xe4\x82\xe5\xa0', u'e'
 		).replace(
 			u'\xc4\x82\xc5\xa0', u'e'
@@ -39,7 +39,7 @@ def AWGetURLTitle(urlstr):
 			u'\xfc', u'u'
 		).replace(
 			u'\xfc', u'u'
-		)#.encode('utf-8', 'ignore')
+		).encode('utf-8', 'ignore')
 	return u'%s' % urlend.sub('', urlspec.sub('-', urlstr))
 
 #
