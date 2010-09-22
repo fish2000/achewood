@@ -1,3 +1,5 @@
+import os
+from django.conf import settings
 from imagekit.specs import ImageSpec
 from imagekit import processors
 
@@ -33,8 +35,8 @@ class JPEGFormatter(processors.Format):
 	extension = 'jpg'
 
 class VanillaICC(processors.ICCTransform):
-	source = '/Library/ColorSync/Profiles/WebSafeColors.icc' # web save LUT
-	destination = '/Library/Application Support/Adobe/Color/Profiles/Recommended/sRGB Color Space Profile.icm' # sRGB 61966-2.1
+	source = os.path.join(settings.MEDIA_ROOT, 'icc', 'WebSafeColors.icc') # web safe LUT
+	destination = os.path.join(settings.MEDIA_ROOT, 'icc', 'sRGB-IEC61966-2-1.icc') # sRGB 61966-2.1
 
 
 
